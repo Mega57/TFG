@@ -1,0 +1,24 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+# Editor-based HTTP Client requests
+/httpRequests/
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
+/estudiantes_asignatura
+/estudiantes_asignatura.xlsx
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/inspectionProfiles/profiles_settings.xml
+/solucion.xlsx
+/text.txt
+/.idea/vcs.xml
+/.idea/workspace.xml
+/docs/~$enrolments.xlsx
+/docs/~$schedules.xlsx
+/docs/pruebas.xlsx
+/.idea/TFG.iml
+/sanitizar.py
+/main2.py
+/horario.py
