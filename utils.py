@@ -5,6 +5,41 @@ import numpy as np
 from alumno import alumno
 from solucion import solucion
 from openpyxl import Workbook
+import pandas as pd
+
+
+class Mutar:
+
+    @staticmethod
+    def mutar(alumno, p_mutacion_teoria, p_mutacion_practicas):
+        horariosPath = "docs/horarios.xlsx"
+        horarios = pd.read_excel(horariosPath)
+        for matricula in alumno.matriculas_variables:
+            if random.random() < p_mutacion_practicas:
+                matricula.grupo_practicas = 1 if matricula.grupo_practicas == 2 else 2
+                filtro2 = (horarios["CODIGO"] == matricula.cod_asignatura) & (
+                        horarios["ID GRUPO"] == matricula.grupo) & (
+                                  horarios["TEORÍA/PRÁCTICA"] == "P")
+                matricula.horario_practicas = horarios.loc[filtro2].apply(lambda row: row['DÍA'] + '/' + row['HORARIO'],
+                                                                          axis=1).tolist()
+                matricula.horario_practicas.pop(abs(matricula.grupo_practicas - 2))
+
+            if random.random() < p_mutacion_teoria:
+                grupos = {10, 11, 12} if matricula.curso == 1 else {10, 11}
+                matricula.grupo = random.choice(list(grupos.difference({matricula.grupo})))
+                filtro = (horarios["CODIGO"] == matricula.cod_asignatura) & (
+                            horarios["ID GRUPO"] == matricula.grupo) & (
+                                 horarios["TEORÍA/PRÁCTICA"] == "T")
+                matricula.horario_teoria = horarios.loc[filtro].apply(lambda row: row['DÍA'] + '/' + row['HORARIO'],
+                                                                      axis=1).tolist()
+                filtro2 = (horarios["CODIGO"] == matricula.cod_asignatura) & (
+                        horarios["ID GRUPO"] == matricula.grupo) & (
+                                  horarios["TEORÍA/PRÁCTICA"] == "P")
+                matricula.horario_practicas = horarios.loc[filtro2].apply(lambda row: row['DÍA'] + '/' + row['HORARIO'],
+                                                                          axis=1).tolist()
+                matricula.horario_practicas.pop(abs(matricula.grupo_practicas - 2))
+        return alumno
+
 
 class Seleccion:
 
@@ -179,7 +214,7 @@ class Utils:
         wb = Workbook()
 
         hoja1 = wb.active
-        hoja1.tittle = "Configuracion Inicial"
+        hoja1.title = "Configuracion Inicial"
         hoja2 = wb.create_sheet(title="Configuracion Final")
 
         hoja1.append(["NOMBRE","ALUMNOS","ESPERADOS POR GRUPO TEORIA", "ESPERADOS POR GRUPO PRACTICAS", "GRUPO 10", "GP1", "GP2", "GRUPO 11", "GP1", "GP2","GRUPO 12","GP1", "GP2",])

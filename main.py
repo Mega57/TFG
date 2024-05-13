@@ -10,6 +10,7 @@ from utils import Seleccion
 from utils import Cruce
 from utils import Sustitucion
 from utils import Utils
+from utils import Mutar
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
@@ -22,60 +23,6 @@ asignaturasPath = "docs/asignaturas.xlsx"
 horarios = pd.read_excel(horariosPath)
 matriculas = pd.read_excel(matriculasPath)
 asignaturas = pd.read_excel(asignaturasPath)
-
-def mutar(alumno):
-    p_mutacion_practicas = 0.005
-    p_mutacion_teoria = 0.001
-    #cursos_vistos = set()
-    #cursos_muta = set()
-    #curso_nuevo = defaultdict(int)
-    horarios = pd.read_excel(horariosPath)
-    for matricula in alumno.matriculas_variables:
-        if random.random() < p_mutacion_practicas:
-            matricula.grupo_practicas = 1 if matricula.grupo_practicas == 2 else 2
-            filtro2 = (horarios["CODIGO"] == matricula.cod_asignatura) & (
-                    horarios["ID GRUPO"] == matricula.grupo) & (
-                              horarios["TEORÍA/PRÁCTICA"] == "P")
-            matricula.horario_practicas = horarios.loc[filtro2].apply(lambda row: row['DÍA'] + '/' + row['HORARIO'],
-                                                                      axis=1).tolist()
-            matricula.horario_practicas.pop(abs(matricula.grupo_practicas - 2))
-
-        if random.random() < p_mutacion_teoria:
-            grupos = {10, 11, 12} if matricula.curso == 1 else {10, 11}
-            matricula.grupo = random.choice(list(grupos.difference({matricula.grupo})))
-            filtro = (horarios["CODIGO"] == matricula.cod_asignatura) & (horarios["ID GRUPO"] == matricula.grupo) & (
-                    horarios["TEORÍA/PRÁCTICA"] == "T")
-            matricula.horario_teoria = horarios.loc[filtro].apply(lambda row: row['DÍA'] + '/' + row['HORARIO'],
-                                                                  axis=1).tolist()
-            filtro2 = (horarios["CODIGO"] == matricula.cod_asignatura) & (
-                    horarios["ID GRUPO"] == matricula.grupo) & (
-                              horarios["TEORÍA/PRÁCTICA"] == "P")
-            matricula.horario_practicas = horarios.loc[filtro2].apply(lambda row: row['DÍA'] + '/' + row['HORARIO'],
-                                                                      axis=1).tolist()
-            matricula.horario_practicas.pop(abs(matricula.grupo_practicas - 2))
-
-        '''if matricula.curso not in cursos_vistos:
-            cursos_vistos.add(matricula.curso)
-            if random.random() < p_mutacion_teoria:
-                cursos_muta.add(matricula.curso)
-        if matricula.curso in cursos_muta:
-            if curso_nuevo[matricula.curso] == 0:
-                grupos = {10,11,12} if matricula.curso == 1 else {10,11}
-                curso_nuevo[matricula.curso] = random.choice(list(grupos.difference({matricula.grupo})))
-            matricula.grupo = curso_nuevo[matricula.curso]
-            filtro = (horarios["CODIGO"] == matricula.cod_asignatura) & (horarios["ID GRUPO"] == matricula.grupo) & (
-                    horarios["TEORÍA/PRÁCTICA"] == "T")
-            matricula.horario_teoria = horarios.loc[filtro].apply(lambda row: row['DÍA'] + '/' + row['HORARIO'],
-                                                                   axis=1).tolist()
-            filtro2 = (horarios["CODIGO"] == matricula.cod_asignatura) & (
-                    horarios["ID GRUPO"] == matricula.grupo) & (
-                              horarios["TEORÍA/PRÁCTICA"] == "P")
-            matricula.horario_practicas = horarios.loc[filtro2].apply(lambda row: row['DÍA'] + '/' + row['HORARIO'],
-                                                                      axis=1).tolist()
-            matricula.horario_practicas.pop(abs(matricula.grupo_practicas - 2))'''
-
-    return alumno
-
 
 '''Lo primero es obtener una lista con los codigos de las asignaturas que son obligatorias y por ende tendrán más de un grupo'''
 asignaturasObligatorias = list(asignaturas[(asignaturas['TECNOLOGÍA'] == 'OB')]['COD. ASIG'])
@@ -117,10 +64,7 @@ configuracion_inicial = solucion(listaAlumnos,listaAlumnos)
 fitness_inicial = configuracion_inicial.calcular_fitness()
 print("Configuracion inicial")
 print(str(fitness_inicial)+" "+str(configuracion_inicial))
-#s = solucion(listaAlumnos)
-#poblacionInicial.append(s)
-#print(s.calcular_tasa_cohesion_desequilibrio())
-#print(s.calcular_solapes())
+
 
 '''Preparamos poblacion inicial'''
 for i in range(400):
@@ -175,25 +119,6 @@ for generacion in range(generaciones):
     for individuo in nueva_generacion:
         for i in range(len(individuo.alumnos)):
             if random.random() < 0.05:
-                individuo.alumnos[i] = mutar(individuo.alumnos[i])
+                individuo.alumnos[i] = Mutar.mutar(individuo.alumnos[i],0.001,0.005)
 
     poblacionInicial = Sustitucion.truncamiento(poblacionInicial,nueva_generacion,fitness)
-
-
-'''matri1 = matricula("a1",1,1,"a",None,1,None,1)
-matri2 = matricula("a2",2,1,"a",None,1,None,1)
-matri3 = matricula("a3",3,2,"a",None,1,None,1)
-matri4 = matricula("a4",4,2,"a",None,1,None,1)
-
-alumno1 = alumno("a",[matri1,matri2,matri3,matri4],None)
-
-matri5 = matricula("a1",1,1,"a",None,1,None,1)
-matri6 = matricula("a2",2,1,"b",None,1,None,1)
-matri7 = matricula("a3",3,2,"a",None,1,None,1)
-
-
-alumno2 = alumno("a2",[matri5,matri6,matri7],None)
-
-so = solucion([alumno1,alumno2])
-
-print(so.calcular_tasa_cohesion_desequilibrio())'''
