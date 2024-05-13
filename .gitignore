@@ -19,6 +19,6 @@
 /docs/~$schedules.xlsx
 /docs/pruebas.xlsx
 /.idea/TFG.iml
-/sanitizar.py
+/utils/sanitizar.py
 /main2.py
 /horario.py
