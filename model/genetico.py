@@ -84,33 +84,28 @@ class genetico:
         # Poblacion inicial que sera una lista de objetos del tipo alumno
         listaAlumnos = list()
         poblacionInicial = []
+        horarios_teoria, horarios_practica = Utils.import_horarios(horarios)
+        salida = []
 
         for alu in matriculas['ALUMNO'].unique():
             matriculas_variables = list()
             matriculas_fijas = list()
             grupo_primero = random.choice([10, 11, 12])
             for indice, fila in matriculas.loc[matriculas['ALUMNO'] == alu].iterrows():
-                filtro = (horarios["CODIGO"] == fila["CODIGO"]) & (horarios["ID GRUPO"] == fila["GRUPO"]) & (
-                        horarios["TEORÍA/PRÁCTICA"] == "T")
-                filtro2 = (horarios["CODIGO"] == fila["CODIGO"]) & (horarios["ID GRUPO"] == fila["GRUPO"]) & (
-                        horarios["TEORÍA/PRÁCTICA"] == "P")
+
                 g = fila["GRUPO"]
-                if fila["GRUPO"] == 14 and fila["CODIGO"] in list(
-                        asignaturas[(asignaturas['CURSO'] == 1)]['COD. ASIG']):
-                    filtro = (horarios["CODIGO"] == fila["CODIGO"]) & (horarios["ID GRUPO"] == grupo_primero) & (
-                            horarios["TEORÍA/PRÁCTICA"] == "T")
-                    filtro2 = (horarios["CODIGO"] == fila["CODIGO"]) & (horarios["ID GRUPO"] == grupo_primero) & (
-                            horarios["TEORÍA/PRÁCTICA"] == "P")
+                horario_teoria = horarios_teoria[fila["CODIGO"]][fila["GRUPO"]]
+                horario_practica = horarios_practica[fila["CODIGO"]][fila["GRUPO"]][1]
+
+                if asignaturas[(asignaturas['COD. ASIG'] == fila["CODIGO"])].iloc[0]["CURSO"] == 1:
                     g = grupo_primero
-                horario_teoria = horarios.loc[filtro].apply(lambda row: row['DÍA'] + '/' + row['HORARIO'],
-                                                            axis=1).tolist()
-                horario_practica = horarios.loc[filtro2].apply(lambda row: row['DÍA'] + '/' + row['HORARIO'],
-                                                               axis=1).tolist()
-                if len(horario_practica) != 1:
-                    horario_practica.pop()
-                m = matricula(fila['ASIGNATURA'], fila['CODIGO'], horarios.loc[filtro].iloc[0]["CURSO"], g,
+                    horario_teoria = horarios_teoria[fila["CODIGO"]][grupo_primero]
+                    horario_practica = horarios_practica[fila["CODIGO"]][grupo_primero][1]
+
+
+                m = matricula(fila['ASIGNATURA'], fila['CODIGO'], asignaturas[(asignaturas['COD. ASIG'] == fila["CODIGO"])].iloc[0]["CURSO"], g,
                               horario_teoria, fila['GP'], horario_practica,
-                              horarios.loc[filtro].iloc[0]["CUATRIMESTRE"])
+                              asignaturas[(asignaturas['COD. ASIG'] == fila["CODIGO"])].iloc[0]["CUATRIMESTRE"])
                 if fila['CODIGO'] in asignaturasObligatorias and fila['CODIGO'] != 42325:
                     matriculas_variables.append(m)
                 else:
@@ -122,6 +117,8 @@ class genetico:
         if self.debug:
             print("Configuracion inicial")
             print(f"{fitness_inicial:.4f}" + " " + str(configuracion_inicial) + "\n")
+            salida.append("Configuracion inicial")
+            salida.append(f"{fitness_inicial:.4f}" + " " + str(configuracion_inicial) + "\n")
 
         '''Preparamos poblacion inicial'''
         for i in range(self.tamaño_poblacion):
@@ -133,21 +130,11 @@ class genetico:
                     if grupos_curso[asignatura.curso] != 0:
                         asignatura.grupo = grupos_curso[asignatura.curso]
                     else:
-                        asignatura.grupo = random.choice([10, 11, 12]) if asignatura.curso == 1 else random.choice(
-                            [10, 11])
+                        asignatura.grupo = random.choice([10, 11, 12]) if asignatura.curso == 1 else random.choice([10, 11])
                         grupos_curso[asignatura.curso] = asignatura.grupo
 
-                    filtro = (horarios["CODIGO"] == asignatura.cod_asignatura) & (
-                                horarios["ID GRUPO"] == asignatura.grupo) & (
-                                     horarios["TEORÍA/PRÁCTICA"] == "T")
-                    asignatura.horario_teoria = horarios.loc[filtro].apply(
-                        lambda row: row['DÍA'] + '/' + row['HORARIO'], axis=1).tolist()
-                    filtro2 = (horarios["CODIGO"] == asignatura.cod_asignatura) & (
-                                horarios["ID GRUPO"] == asignatura.grupo) & (
-                                      horarios["TEORÍA/PRÁCTICA"] == "P")
-                    asignatura.horario_practicas = horarios.loc[filtro2].apply(
-                        lambda row: row['DÍA'] + '/' + row['HORARIO'], axis=1).tolist()
-                    asignatura.horario_practicas.pop(abs(asignatura.grupo_practicas - 2))
+                    asignatura.horario_teoria = horarios_teoria[asignatura.cod_asignatura][asignatura.grupo]
+                    asignatura.horario_practicas = horarios_practica[asignatura.cod_asignatura][asignatura.grupo][asignatura.grupo_practicas]
             poblacionInicial.append(solucion(individuo, listaAlumnos))
 
 
@@ -171,6 +158,8 @@ class genetico:
                 Utils.print_solucion(poblacionInicial, fitness, generacion + 1)
                 print("Mejor Generacion: " + str(max_generacion))
                 print(f"{max_fitness:.4f}" + " " + str(max_solucion) + "\n")
+                salida.append("Mejor Generacion: " + str(max_generacion))
+                salida.append(f"{max_fitness:.4f}" + " " + str(max_solucion) + "\n")
             padres = []
             for i in range(0, len(poblacionInicial) - 1, 2):
                 padre1, padre2 = self.__seleccion(poblacionInicial, fitness)
@@ -179,7 +168,7 @@ class genetico:
             for individuo in nueva_generacion:
                 for i in range(len(individuo.alumnos)):
                     if random.random() < self.p_mutacion_alumno:
-                        individuo.alumnos[i] = Mutar.mutar(individuo.alumnos[i], self.p_mutacion_teoria, self.p_mutacion_practica)
+                        individuo.alumnos[i] = Mutar.mutar(individuo.alumnos[i], self.p_mutacion_teoria, self.p_mutacion_practica,horarios_teoria,horarios_practica)
 
             poblacionInicial = self.__sustitucion(poblacionInicial, nueva_generacion, fitness)
             end_time = time.time()
@@ -187,5 +176,11 @@ class genetico:
             tiempo_total += iteration_time
             if self.debug:
                 print(f"Tiempo de la Generación {generacion + 1}: "+Utils.str_time(iteration_time))
+                salida.append(f"Tiempo de la Generación {generacion + 1}: "+Utils.str_time(iteration_time))
 
         print(f"Tiempo Total: " + Utils.str_time(tiempo_total))
+        salida.append(f"Tiempo Total: " + Utils.str_time(tiempo_total))
+
+        with open("results/salida.txt", "w") as archivo:
+            for linea in salida:
+                archivo.write(linea)

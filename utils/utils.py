@@ -1,4 +1,6 @@
 import random
+from collections import defaultdict
+
 import numpy as np
 from model.alumno import alumno
 from model.solucion import solucion
@@ -7,33 +9,17 @@ import pandas as pd
 class Mutar:
 
     @staticmethod
-    def mutar(alumno, p_mutacion_teoria, p_mutacion_practicas):
-        horariosPath = "docs/horarios.xlsx"
-        horarios = pd.read_excel(horariosPath)
+    def mutar(alumno, p_mutacion_teoria, p_mutacion_practicas,horarios_teoria,horarios_practica):
         for matricula in alumno.matriculas_variables:
             if random.random() < p_mutacion_practicas:
                 matricula.grupo_practicas = 1 if matricula.grupo_practicas == 2 else 2
-                filtro2 = (horarios["CODIGO"] == matricula.cod_asignatura) & (
-                        horarios["ID GRUPO"] == matricula.grupo) & (
-                                  horarios["TEORÍA/PRÁCTICA"] == "P")
-                matricula.horario_practicas = horarios.loc[filtro2].apply(lambda row: row['DÍA'] + '/' + row['HORARIO'],
-                                                                          axis=1).tolist()
-                matricula.horario_practicas.pop(abs(matricula.grupo_practicas - 2))
+                matricula.horario_practicas = horarios_practica[matricula.cod_asignatura][matricula.grupo][matricula.grupo_practicas]
 
             if random.random() < p_mutacion_teoria:
                 grupos = {10, 11, 12} if matricula.curso == 1 else {10, 11}
                 matricula.grupo = random.choice(list(grupos.difference({matricula.grupo})))
-                filtro = (horarios["CODIGO"] == matricula.cod_asignatura) & (
-                            horarios["ID GRUPO"] == matricula.grupo) & (
-                                 horarios["TEORÍA/PRÁCTICA"] == "T")
-                matricula.horario_teoria = horarios.loc[filtro].apply(lambda row: row['DÍA'] + '/' + row['HORARIO'],
-                                                                      axis=1).tolist()
-                filtro2 = (horarios["CODIGO"] == matricula.cod_asignatura) & (
-                        horarios["ID GRUPO"] == matricula.grupo) & (
-                                  horarios["TEORÍA/PRÁCTICA"] == "P")
-                matricula.horario_practicas = horarios.loc[filtro2].apply(lambda row: row['DÍA'] + '/' + row['HORARIO'],
-                                                                          axis=1).tolist()
-                matricula.horario_practicas.pop(abs(matricula.grupo_practicas - 2))
+                matricula.horario_teoria = horarios_teoria[matricula.cod_asignatura][matricula.grupo]
+                matricula.horario_practicas = horarios_practica[matricula.cod_asignatura][matricula.grupo][matricula.grupo_practicas]
         return alumno
 
 
@@ -199,6 +185,25 @@ class Utils:
         else:
             horas = time/3600
             return (f"{horas:.2f} hr")
+
+    @staticmethod
+    def import_horarios(horarios):
+
+        horarios_teoria = defaultdict(lambda: defaultdict(list))
+        horarios_practicas = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+
+        for indice, fila in horarios.iterrows():
+
+            if fila["TEORÍA/PRÁCTICA"] == 'T':
+                horarios_teoria[fila["CODIGO"]][fila["ID GRUPO"]].append(fila["DÍA"]+'/'+fila["HORARIO"])
+            else:
+                if len(horarios_practicas[fila["CODIGO"]][fila["ID GRUPO"]][1]) == 0:
+                    horarios_practicas[fila["CODIGO"]][fila["ID GRUPO"]][1].append(fila["DÍA"]+'/'+fila["HORARIO"])
+                else:
+                    horarios_practicas[fila["CODIGO"]][fila["ID GRUPO"]][2].append(fila["DÍA"] + '/' + fila["HORARIO"])
+
+        return horarios_teoria,horarios_practicas
+
 
 
 
