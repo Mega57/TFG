@@ -1,9 +1,11 @@
-from model.configuracion import configuracion
-from model.genetico import genetico
+from model.genetico import Genetico
+from model.nsga3 import NSGA3
 
+'''algoritmo_genetico = Genetico(800, 20, "fitness", "uniforme", "truncamiento", 0.05, 0.001, 0.005, 10, True)
 
-c = configuracion(400,20,"fitness","uniforme","truncamiento",0.05,0.001,0.005,10,True)
+algoritmo_genetico.ejecutar()'''
 
-algoritmo_genetico = genetico(c)
+nsa3 = NSGA3(100,20,"uniforme",0.05, 0.001, 0.005,10,True)
 
-algoritmo_genetico.ejecutar()
+nsa3.ejecutar()
+

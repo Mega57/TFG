@@ -203,7 +203,3 @@ class Utils:
                     horarios_practicas[fila["CODIGO"]][fila["ID GRUPO"]][2].append(fila["DÍA"] + '/' + fila["HORARIO"])
 
         return horarios_teoria,horarios_practicas
-
-
-
-

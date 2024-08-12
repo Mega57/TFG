@@ -13,19 +13,19 @@ from utils.utils import Sustitucion
 from utils.utils import Utils
 from utils.utils import Mutar
 from utils.export import Export
-class genetico:
+class Genetico:
 
-    def __init__(self,configuracion):
-        self.generaciones = configuracion.generaciones
-        self.tamaño_poblacion = configuracion.tamaño_poblacion
-        self.p_mutacion_alumno = configuracion.p_mutacion_alumno
-        self.p_mutacion_teoria = configuracion.p_mutacion_teoria
-        self.p_mutacion_practica = configuracion.p_mutacion_practica
-        self.metodo_seleccion = configuracion.seleccion
-        self.metodo_cruce = configuracion.cruce
-        self.metodo_sustitucion = configuracion.sustitucion
-        self.tamaño_torneo = configuracion.tamaño_torneo
-        self.debug = configuracion.debug
+    def __init__(self, tamaño_poblacion, generaciones, seleccion, cruce, sustitucion, p_mutacion_alumno, p_mutacion_teoria, p_mutacion_practica, tamaño_torneo, debug):
+        self.tamaño_poblacion = tamaño_poblacion
+        self.generaciones = generaciones
+        self.metodo_seleccion = seleccion
+        self.metodo_cruce = cruce
+        self.metodo_sustitucion = sustitucion
+        self.p_mutacion_alumno = p_mutacion_alumno
+        self.p_mutacion_teoria = p_mutacion_teoria
+        self.p_mutacion_practica = p_mutacion_practica
+        self.tamaño_torneo = tamaño_torneo
+        self.debug = debug
 
 
     def __seleccion(self,poblacion,fitness):
@@ -157,6 +157,12 @@ class genetico:
             if self.debug:
                 Utils.print_solucion(poblacionInicial, fitness, generacion + 1)
                 print("Mejor Generacion: " + str(max_generacion))
+                print("fitness" + " ( " + "solapes" + ", " +
+                      "Cohesion teoria" + ", " +
+                      "Equilibrio grupos" + ", " +
+                      "Practicas pronto" + ", " +
+                      "Cohesion practicas" + ", " +
+                      "Preferencias" + " ) " + str(generacion) + " Generacion")
                 print(f"{max_fitness:.4f}" + " " + str(max_solucion) + "\n")
                 salida.append("Mejor Generacion: " + str(max_generacion))
                 salida.append(f"{max_fitness:.4f}" + " " + str(max_solucion) + "\n")
