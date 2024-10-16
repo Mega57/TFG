@@ -11,6 +11,7 @@ class solucion:
         self.tasa_preferencias = 0
         self.preferencias = preferencias
         self.estudiantes_asignatura = None
+        self.fitness = 0.0
 
     def calcular_tasa_cohesion_desequilibrio(self):
         cohesiones_alumno = []  # Almacena las tasas de cohesión para cada alumno
@@ -109,19 +110,19 @@ class solucion:
     def calcular_solapes(self):
         return sum(alumno.calcular_solapes() for alumno in self.alumnos)
 
-    def calcular_fitness(self,w1=0.2,w2=0.2,w3=0.15,w4=0.15,w5=0.1,w6=0.2):
+    def calcular_fitness(self,w1=0.1,w2=0.1,w3=0.55,w4=0,w5=0.1,w6=0.15):
         self.solapes = self.calcular_solapes()
         self.tasa_cohesion,self.d_total,self.tasa_practicas_pronto,self.tasa_cohesion_practicas, self.tasa_preferencias= self.calcular_tasa_cohesion_desequilibrio()
-
-        return ((w1 * self.tasa_cohesion) - (w2 * (self.solapes/solucion(self.preferencias,None).calcular_solapes())) + (w3 * self.d_total) + (w4 * self.tasa_practicas_pronto)
+        self.fitness = ((w1 * self.tasa_cohesion) - (w2 * (self.solapes/solucion(self.preferencias,None).calcular_solapes())) + (w3 * self.d_total) + (w4 * self.tasa_practicas_pronto)
                 + (w5 * self.tasa_cohesion_practicas) + (w6 * self.tasa_preferencias))
+        return self.fitness
 
     def evaluar_solucion(self):
         self.solapes = self.calcular_solapes()
         self.tasa_cohesion, self.d_total, self.tasa_practicas_pronto, self.tasa_cohesion_practicas, self.tasa_preferencias = self.calcular_tasa_cohesion_desequilibrio()
 
     def domina(self, otra_solucion):
-        no_peor = ((self.tasa_preferencias >= otra_solucion.tasa_preferencias) and
+        '''no_peor = ((self.tasa_preferencias >= otra_solucion.tasa_preferencias) and
                    (self.tasa_cohesion >= otra_solucion.tasa_cohesion) and
                    (self.d_total >= otra_solucion.d_total) and
                    (self.tasa_practicas_pronto >= otra_solucion.tasa_practicas_pronto) and
@@ -133,12 +134,24 @@ class solucion:
                              (self.d_total > otra_solucion.d_total) or
                              (self.tasa_practicas_pronto > otra_solucion.tasa_practicas_pronto) or
                              (self.tasa_cohesion_practicas > otra_solucion.tasa_cohesion_practicas) or
+                             (self.solapes < otra_solucion.solapes))'''
+
+        no_peor = ((self.tasa_preferencias >= otra_solucion.tasa_preferencias) and
+                   (self.tasa_cohesion >= otra_solucion.tasa_cohesion) and
+                   (self.d_total >= otra_solucion.d_total) and
+                   (self.tasa_practicas_pronto >= otra_solucion.tasa_practicas_pronto) and
+                   (self.solapes <= otra_solucion.solapes))
+
+        al_menos_un_mejor = ((self.tasa_preferencias > otra_solucion.tasa_preferencias) or
+                             (self.tasa_cohesion > otra_solucion.tasa_cohesion) or
+                             (self.d_total > otra_solucion.d_total) or
+                             (self.tasa_practicas_pronto > otra_solucion.tasa_practicas_pronto) or
                              (self.solapes < otra_solucion.solapes))
 
         return no_peor and al_menos_un_mejor
 
     def __str__(self):
         return (f" ( {self.solapes:.0f}, {self.tasa_cohesion:.4f}, {self.d_total:.4f}, "
-                f"{self.tasa_practicas_pronto:.4f}, {self.tasa_cohesion_practicas:.4f}, "
+                f"{self.tasa_cohesion_practicas:.4f}, "
                 f"{self.tasa_preferencias:.4f} ) ")
 

@@ -49,12 +49,12 @@ class Seleccion:
     @staticmethod
     def seleccion_torneo(poblacion,fitness,k):
 
-        torneo1 = random.sample([i for i in range(1, len(poblacion) + 1)], k)
-        torneo2 = random.sample([i for i in range(1, len(poblacion) + 1)], k)
+        torneo1 = random.sample([i for i in range(len(poblacion))], k)
+        torneo2 = random.sample([i for i in range(len(poblacion))], k)
         id1 = sorted(torneo1, key=lambda x: fitness[x], reverse=True)[0]
         id2 = sorted(torneo2, key=lambda x: fitness[x], reverse=True)[0]
         while id1 == id2:
-            torneo2 = random.sample([i for i in range(1, len(poblacion) + 1)], k)
+            torneo2 = random.sample([i for i in range(len(poblacion))], k)
             id2 = sorted(torneo2, key=lambda x: fitness[x], reverse=True)[0]
         padre1 = poblacion[id1]
         padre2 = poblacion[id2]
@@ -165,7 +165,6 @@ class Utils:
         print("fitness" + " ( " + "solapes" + ", " +
               "Cohesion teoria" + ", " +
               "Equilibrio grupos" + ", " +
-              "Practicas pronto" + ", " +
               "Cohesion practicas" + ", " +
               "Preferencias" + " ) " + str(generacion) +" Generacion")
         print("---------------------------------------------------------------------------------------------------------------------------------------")

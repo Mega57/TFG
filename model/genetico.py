@@ -15,7 +15,7 @@ from utils.utils import Mutar
 from utils.export import Export
 class Genetico:
 
-    def __init__(self, tamaño_poblacion, generaciones, seleccion, cruce, sustitucion, p_mutacion_alumno, p_mutacion_teoria, p_mutacion_practica, tamaño_torneo, debug):
+    def __init__(self, tamaño_poblacion, generaciones, seleccion, cruce, sustitucion, p_mutacion_alumno, p_mutacion_teoria, p_mutacion_practica, tamaño_torneo, carpeta, debug):
         self.tamaño_poblacion = tamaño_poblacion
         self.generaciones = generaciones
         self.metodo_seleccion = seleccion
@@ -26,6 +26,10 @@ class Genetico:
         self.p_mutacion_practica = p_mutacion_practica
         self.tamaño_torneo = tamaño_torneo
         self.debug = debug
+        self.max_generacion = 0
+        self.max_fitness = ""
+        self.time = ""
+        self.carpeta = carpeta
 
 
     def __seleccion(self,poblacion,fitness):
@@ -57,7 +61,7 @@ class Genetico:
 
         if self.metodo_sustitucion == 'reemplazo':
             return Sustitucion.reemplazo(nueva_generacion)
-        elif self.metodo_sustitucion == 'elititsmo':
+        elif self.metodo_sustitucion == 'elitismo':
             return Sustitucion.elitismo(poblacionInicial,nueva_generacion,fitness)
         elif self.metodo_sustitucion == 'truncamiento':
             return Sustitucion.truncamiento(poblacionInicial,nueva_generacion,fitness)
@@ -142,27 +146,27 @@ class Genetico:
         max_solucion = None
         max_generacion = 0
         tiempo_total = 0
+        response = []
         '''Algoritmo genético'''
         for generacion in range(self.generaciones):
             start_time = time.time()
             fitness = {i: poblacionInicial[i].calcular_fitness() for i in range(len(poblacionInicial))}
             max_i = max(fitness, key=fitness.get)
             if fitness[max_i] > max_fitness:
+                self.max_generacion = generacion + 1
+
                 max_fitness = fitness[max_i]
                 max_generacion = generacion + 1
                 max_solucion = copy.deepcopy(poblacionInicial[max_i])
-                Export.matriculas(max_solucion.alumnos)
-                Export.alumnos_clase(configuracion_inicial.estudiantes_asignatura, max_solucion.estudiantes_asignatura,
-                                     asignaturas)
+                self.max_fitness = f"{fitness[max_i]:.4f}" + str(max_solucion)
             if self.debug:
                 Utils.print_solucion(poblacionInicial, fitness, generacion + 1)
                 print("Mejor Generacion: " + str(max_generacion))
                 print("fitness" + " ( " + "solapes" + ", " +
                       "Cohesion teoria" + ", " +
                       "Equilibrio grupos" + ", " +
-                      "Practicas pronto" + ", " +
                       "Cohesion practicas" + ", " +
-                      "Preferencias" + " ) " + str(generacion) + " Generacion")
+                      "Preferencias" + " ) " + str(generacion+1) + " Generacion")
                 print(f"{max_fitness:.4f}" + " " + str(max_solucion) + "\n")
                 salida.append("Mejor Generacion: " + str(max_generacion))
                 salida.append(f"{max_fitness:.4f}" + " " + str(max_solucion) + "\n")
@@ -176,17 +180,22 @@ class Genetico:
                     if random.random() < self.p_mutacion_alumno:
                         individuo.alumnos[i] = Mutar.mutar(individuo.alumnos[i], self.p_mutacion_teoria, self.p_mutacion_practica,horarios_teoria,horarios_practica)
 
+            elementResponse = [poblacionInicial]
             poblacionInicial = self.__sustitucion(poblacionInicial, nueva_generacion, fitness)
             end_time = time.time()
             iteration_time = end_time - start_time
+            elementResponse.append(iteration_time)
+            response.append(elementResponse)
             tiempo_total += iteration_time
             if self.debug:
                 print(f"Tiempo de la Generación {generacion + 1}: "+Utils.str_time(iteration_time))
                 salida.append(f"Tiempo de la Generación {generacion + 1}: "+Utils.str_time(iteration_time))
 
         print(f"Tiempo Total: " + Utils.str_time(tiempo_total))
+        self.time = tiempo_total
         salida.append(f"Tiempo Total: " + Utils.str_time(tiempo_total))
 
-        with open("results/salida.txt", "w") as archivo:
-            for linea in salida:
-                archivo.write(linea)
+        Export.matriculas(max_solucion.alumnos, self.metodo_seleccion, self.metodo_cruce, self.metodo_sustitucion, self.carpeta)
+        Export.alumnos_clase(configuracion_inicial.estudiantes_asignatura, max_solucion.estudiantes_asignatura,asignaturas, self.metodo_seleccion, self.metodo_cruce, self.metodo_sustitucion, self.carpeta)
+
+        return response
