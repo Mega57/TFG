@@ -2,65 +2,134 @@
 
 Este proyecto implementa un algoritmo genético diseñado para optimizar la asignación de alumnos a clases y grupos de prácticas en un entorno educativo, basándose en diversas métricas como la cohesión de grupo, preferencias de horario, y minimización de solapes.
 
+Este proyecto implementa dos algoritmos genéticos —uno clásico y otro basado en **NSGA-III**— para optimizar la asignación de alumnos a grupos de teoría y prácticas en el Grado de Ingeniería Informática. El objetivo es evitar solapes horarios, satisfacer las preferencias de los estudiantes y lograr una distribución equilibrada de alumnos en los grupos.
+
 ## Estructura del Proyecto
 
-El proyecto está organizado en diferentes carpetas que contienen módulos específicos y datos relacionados:
+```
+.
+├── app.py
+├── model/
+│   ├── alumno.py
+│   ├── matricula.py
+│   ├── solucion.py
+│   ├── genetico.py
+│   └── nsga3.py
+├── utils/
+│   ├── export.py
+│   └── utils.py
+├── docs/
+│   ├── asignaturas.xlsx
+│   ├── horarios.xlsx
+│   └── matriculas.xlsx
+├── static/
+│   └── style.css
+├── templates/
+│   ├── index.html
+│   ├── loading.html
+│   ├── resultados_genetico.html
+│   └── resultados_nsga.html
+├── scripts/
+│   ├── fase1.py
+│   ├── fase2.py
+│   └── fase3.py
+└── result/
+```
 
-### Carpeta `model`
-Contiene los módulos principales que definen la lógica del algoritmo genético:
-- **alumno.py**: Define la clase `Alumno`, que maneja las características y métodos específicos de cada alumno.
-- **matricula.py**: Define la clase `Matricula`, que gestiona la información relacionada con las matrículas de cada alumno.
-- **solucion.py**: Representa una solución generada por el algoritmo genético, incluyendo métodos para evaluar y comparar soluciones.
-- **configuracion.py**: Gestiona la carga y el acceso a la configuración del algoritmo genético, permitiendo ajustes dinámicos en los parámetros de ejecución.
-- **genetico.py**: Contiene la implementación principal del algoritmo genético, organizando los procesos de selección, cruce, y mutación.
-### Carpeta `utils`
-Contiene utilidades y funciones de soporte:
-- **export.py**: Proporciona funcionalidades para exportar los resultados del algoritmo a diversos formatos para su análisis o presentación.
-- **utils.py**: Incluye funciones auxiliares que apoyan en las diversas tareas del algoritmo.
+### Descripción de archivos y carpetas
 
-### Carpeta `docs`
-Almacena archivos de datos en formato Excel que son utilizados por el algoritmo:
-- **asignaturas.xlsx**: Detalles de las asignaturas disponibles.
-- **horarios.xlsx**: Horarios asociados a las asignaturas.
-- **matriculas.xlsx**: Información sobre las matrículas de los alumnos.
+- **`app.py`**: Archivo principal que lanza la aplicación web. Gestiona las peticiones de usuario, redirige a la lógica correspondiente y devuelve respuestas a la interfaz.
 
-**main.py**: Archivo principal que inicia y coordina la ejecución del algoritmo genético.
+#### Carpeta `model`
+Contiene los módulos principales donde se implementa la lógica de los algoritmos:
+- `alumno.py`: Define la clase `Alumno`, que contiene la información de cada estudiante.
+- `matricula.py`: Clase `Matricula`, que gestiona los registros de cada asignatura a la que se matricula un alumno.
+- `solucion.py`: Representa un individuo en el algoritmo genético. Una solución contiene una lista de alumnos, y cada alumno su lista de matrículas.
+- `genetico.py`: Implementación del algoritmo genético clásico.
+- `nsga3.py`: Implementación del algoritmo NSGA-III.
 
-## Salida y Resultados
+#### Carpeta `utils`
+Módulos auxiliares:
+- `export.py`: Funciones para exportar los resultados a formato Excel.
+- `utils.py`: Funciones de apoyo para tareas comunes.
 
-- **ejemplo_salida.txt**: Este archivo contiene un ejemplo de las impresiones en consola que el algoritmo produce durante su ejecución, mostrando el progreso y las métricas calculadas en cada generación. (Este archivo es solo un ejemplo de lo que se imprime en consola)
-- **/results**: Esta carpeta contiene dos archivos generados al final de la ejecución del algoritmo:
-  - **configuracion_matriculas.xlsx**: Almacena la configuración final de las matrículas de los alumnos como resultado de la optimización.
-  - **proporcion_alumnos.xlsx**: Incluye la proporción ideal de alumnos que debería tener cada grupo de teoría y prácticas en las asignaturas y los conteos de alumnos al inicio y al final de la ejecución.
+#### Carpeta `docs/`
+Contiene los archivos de entrada:
+- `asignaturas.xlsx`: Información de todas las asignaturas del grado.
+- `horarios.xlsx`: Horarios detallados por grupo de teoría y prácticas.
+- `matriculas.xlsx`: Matrículas reales anonimizadas del curso 2023–2024.
+
+#### Carpeta `static`
+Contiene los estilos CSS utilizados por las plantillas de la aplicación web:
+- `style.css`: Estilo base de la interfaz.
+
+#### Carpeta `templates`
+Contiene las plantillas HTML que definen la interfaz web:
+- `index.html`: Página de inicio. Permite subir los archivos, seleccionar algoritmo y configuración, y ejecutar el proceso.
+- `loading.html`: Muestra una pantalla de carga durante la ejecución del algoritmo.
+- `resultados_genetico.html`: Muestra los resultados del algoritmo genético clásico.
+- `resultados_nsga.html`: Muestra los resultados del algoritmo NSGA-III.
+
+#### Carpeta `scripts`
+Contiene los scripts que se han usado en la fase de experimentación:
+- `fase1.py`: Evalúa todas las combinaciones de métodos de selección, cruce y sustitución con hiperparámetros fijos (genético clásico).
+- `fase2.py`: Evalúa diferentes combinaciones de hiperparámetros con los mejores métodos de la fase 1 (genético clásico).
+- `fase3.py`: Evalúa combinaciones de hiperparámetros en NSGA-III.
 
 ## Cómo Empezar
 
-Para ejecutar este proyecto, asegúrate de tener Python instalado y las dependencias necesarias:
+Instala las dependencias necesarias:
 
 ```bash
 pip install numpy
 pip install pandas
 pip install openpyxl
+pip install flask
+pip install werkzeug
 ```
-Clona este repositorio y ejecuta el archivo main.py para iniciar el algoritmo:
+
+Clona este repositorio y ejecuta la aplicación web:
+
 ```bash
 git clone https://github.com/Mega57/TFG.git
-cd repositorio
-python main.py
+cd TFG
+python app.py
 ```
 
-## Configuración
+Después de ejecutar, accede a la siguiente dirección en tu navegador:
 
-Los parámetros del algoritmo genético se ajustan a través de la clase Configuracion, que se instancia y se pasa al constructor de Genetico. Puedes modificar los parámetros directamente en el código o cargarlos desde un archivo externo antes de crear la instancia de Configuracion.
+```
+http://localhost:5000
+```
 
-Ejemplo de configuración en main.py:
-```python
-from configuracion import Configuracion
-from genetico import Genetico
+Desde ahí podrás subir los ficheros de entrada, seleccionar el algoritmo y configuración, y visualizar los resultados.
 
-# Configurar los parámetros del algoritmo
-config = configuracion(tamaño_poblacion=400,generaciones=20,seleccion="fitness",cruce="uniforme",sustitucion="truncamiento",p_mutacion_alumno=0.05,p_mutacion_teoria=0.001,p_mutacion_practica=0.005,tamaño_torneo=10,debug=True)
-genetico = genetico(config)
-genetico.ejecutar()
+## Salida y Resultados
+
+Durante la ejecución desde la aplicación web, los resultados se almacenan automáticamente en la carpeta:
+
+```
+/result
+```
+
+### Algoritmo Genético Clásico
+
+Se generan dos archivos correspondientes al individuo con mayor **fitness** de todas las generaciones:
+
+- **`matriculas.xlsx`**: Contiene la configuración final de matrícula de ese individuo.
+- **`distribucion-grupos.xlsx`**: Muestra cómo ha quedado el reparto de alumnos por grupo de teoría y prácticas. Este objetivo es especialmente relevante, ya que busca mantener el equilibrio entre los grupos.
+
+### Algoritmo NSGA-III
+
+Se generan múltiples soluciones no dominadas (frente de Pareto final). Para cada una se crea una subcarpeta:
+
+```
+/result/
+├── solucion_1/
+│   ├── matriculas.xlsx
+│   └── distribucion-grupos.xlsx
+├── solucion_2/
+│   ├── matriculas.xlsx
+│   └── distribucion-grupos.xlsx
 ```
 

@@ -1,0 +1,91 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 40px;
+  background-color: #f4f4f9;
+  color: #333;
+}
+
+h1, h2 {
+  color: #004466;
+}
+
+label {
+  display: block;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+input, select, button {
+  margin-top: 5px;
+  padding: 5px;
+  width: 300px;
+  max-width: 100%;
+}
+
+button {
+  padding: 8px 20px;
+  font-size: 14px;
+  background-color: #0077aa;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  width: auto;
+  min-width: 100px;
+  text-align: center;
+}
+
+button:hover {
+  background-color: #005577;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+th, td {
+  padding: 10px;
+  border: 1px solid #ccc;
+  text-align: center;
+}
+
+.loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 15vh;
+  height: 100vh;
+  text-align: center;
+}
+
+.loader-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centra el botón, el texto y el loader */
+  gap: 20px;
+}
+
+.loader {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #0077aa;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-msg {
+  background-color: #ffe0e0;
+  border: 1px solid #cc0000;
+  color: #900;
+  padding: 12px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+}

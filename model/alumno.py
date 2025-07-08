@@ -9,7 +9,6 @@ class alumno:
     def __str__(self):
         return f'({self.nombre},{self.matriculas_variables},{self.matriculas_fijas})'
 
-
     def calcular_solapes(self):
         solapes = 0
         try:
@@ -22,9 +21,6 @@ class alumno:
                     horarios2 = set(matricula2.horario_teoria + matricula2.horario_practicas)
                     if len(horarios1.intersection(horarios2)) > 0:
                         solapes += 1
-                        #print(matricula1.nombre_asignatura + " - " + str(matricula1.grupo))
-                        #print(matricula2.nombre_asignatura + " - " + str(matricula2.grupo))
-                        #print("-------------------------------------------------------------------")
         except TypeError:
             print("ERROR")
         return solapes

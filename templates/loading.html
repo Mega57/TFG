@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ejecutando...</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="loader-container">
+    <div class="loader-content">
+      <h2>Ejecutando el algoritmo... Por favor, espera.</h2>
+      <div class="loader"></div>
+      <form action="{{ url_for('cancel') }}" method="post">
+        <button type="submit">Cancelar</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    setInterval(() => {
+      fetch('/check-status')
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            window.location.href = "/";
+          } else if (data.ready) {
+            window.location.href = "/resultado";
+          }
+        });
+    }, 1000);
+  </script>
+</body>
+</html>

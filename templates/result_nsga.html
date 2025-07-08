@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Resultados NSGA-III</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <h1>Resultados del Algoritmo NSGA-III</h1>
+
+  <h2>Hiperparámetros</h2>
+  <ul>
+    {% for k, v in data['params'].items() %}
+      <li><strong>{{ k }}:</strong> {{ v }}</li>
+    {% endfor %}
+  </ul>
+
+  <h2>Archivos generados por solución</h2>
+  <p>Para cada solución del frente se ha creado una carpeta con los archivos:</p>
+  <ul>
+    {% for i in range(data['num_soluciones']) %}
+      <li>
+        <strong>Solución {{ i + 1 }}:</strong>
+        <code>result/nsga3/solucion_{{ i + 1 }}/matriculas.xlsx</code>,
+        <code>distribucion-grupos.xlsx</code>
+      </li>
+    {% endfor %}
+  </ul>
+
+  <h2>Frente de Pareto</h2>
+  <p>Estas son las soluciones no dominadas del frente final:</p>
+  <table>
+  <tr>
+     <th>#</th>
+    <th>Solapes</th>
+    <th>Cohesión teoría</th>
+    <th>Equilibrio grupos</th>
+    <th>Cohesión practicas</th>
+    <th>Preferencias</th>
+  </tr>
+  {% for individuo in data['frente_pareto'] %}
+  <tr>
+    <td>{{ loop.index }}</td>
+    <td>{{ individuo[0] }}</td>
+    <td>{{ individuo[1] }}</td>
+    <td>{{ individuo[2] }}</td>
+    <td>{{ individuo[3] }}</td>
+    <td>{{ individuo[4] }}</td>
+  </tr>
+  {% endfor %}
+  </table>
+
+  <h2>Resumen por generación</h2>
+  <table>
+    <tr>
+      <th>Generación</th>
+      <th>Tamaño del frente</th>
+      <th>Tiempo</th>
+    </tr>
+    {% for fila in data['resumen'] %}
+    <tr>
+      <td>{{ fila['generacion'] }}</td>
+      <td>{{ fila['num_elementos'] }}</td>
+      <td>{{ fila['tiempo'] }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+
+  <br><a href="{{ url_for('index') }}">Volver al inicio</a>
+</body>
+</html>

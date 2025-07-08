@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Resultados</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <h1>Resultados del Algoritmo Genético Clásico</h1>
+
+  <h2>Hiperparámetros</h2>
+  <ul>
+    {% for k, v in data['params'].items() %}
+      <li><strong>{{ k }}:</strong> {{ v }}</li>
+    {% endfor %}
+  </ul>
+
+  <h2>Archivos generados</h2>
+  <p>Los siguientes archivos se han generado y guardado automáticamente:</p>
+  <ul>
+    <li>
+      <strong>Matrículas asignadas:</strong>
+      <code>result/{{ data['archivos'][0] }}</code>
+    </li>
+    <li>
+      <strong>Distribución grupos:</strong>
+      <code>result/{{ data['archivos'][1] }}</code>
+    </li>
+  </ul>
+
+  <h2>Mejor solución</h2>
+  <p>Generación: {{ data['mejor']['generacion'] }}</p>
+  {% set nombres_objetivos = [
+    "Fitness",
+    "Solapes",
+    "Cohesión teoría",
+    "Equilibrio grupos",
+    "Cohesión prácticas",
+    "Preferencias"
+  ] %}
+
+<ul>
+  {% for i in range(nombres_objetivos | length) %}
+    <li>{{ nombres_objetivos[i] }}: {{ data['mejor']['objetivos'][i] }}</li>
+  {% endfor %}
+</ul>
+
+<h2>Resumen por generación</h2>
+  <table>
+    <tr>
+      <th>Generación</th>
+      <th>Máx</th>
+      <th>Media</th>
+      <th>Mín</th>
+      <th>Desv. Estándar</th>
+      <th>Tiempo</th>
+    </tr>
+    {% for fila in data['resumen'] %}
+      <tr>
+        <td>{{ fila['generacion'] }}</td>
+        <td>{{ fila['max'] }}</td>
+        <td>{{ fila['media'] }}</td>
+        <td>{{ fila['min'] }}</td>
+        <td>{{ fila['desviacion'] }}</td>
+        <td>{{ fila['tiempo'] }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+
+  <br><a href="{{ url_for('index') }}">Volver al inicio</a>
+
+</body>
+</html>

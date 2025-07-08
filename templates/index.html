@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Algoritmo Genético - TFG</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <h1>Algoritmo Genético - TFG</h1>
+
+  {% if error %}
+    <div class="error-msg">{{ error }}</div>
+  {% endif %}
+
+  <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data">
+    <label>Archivo de horarios:</label>
+    <input type="file" name="horarios" required><br>
+
+    <label>Archivo de matrículas:</label>
+    <input type="file" name="matriculas" required><br><br>
+
+    <label>Algoritmo:</label>
+    <select name="algoritmo" id="algoritmo" required>
+      <option value="clasico">Clásico</option>
+      <option value="nsga-iii">NSGA-III</option>
+    </select><br><br>
+
+    <label>Configuración:</label>
+    <select name="configuracion" id="configuracion">
+      <option value="optima">Óptima</option>
+      <option value="manual">Manual</option>
+    </select><br><br>
+
+    <div id="parametros">
+      <label>Selección:</label>
+      <select name="seleccion" id="seleccion">
+        <option value="fitness">Fitness</option>
+        <option value="rango">Rango</option>
+        <option value="torneo">Torneo</option>
+      </select><br>
+
+      <div id="torneo-input" style="display:none;">
+        <label>Tamaño Torneo:</label>
+        <input type="number" name="t_torneo" id="t_torneo" min="1">
+      </div>
+
+      <label>Cruce:</label>
+      <select name="cruce" id="cruce">
+        <option value="uniforme">Uniforme</option>
+        <option value="punto">Un punto</option>
+        <option value="varios_puntos">Varios puntos</option>
+      </select><br>
+
+      <label>Sustitución:</label>
+      <select name="sustitucion" id="sustitucion">
+        <option value="reemplazo">Reemplazo</option>
+        <option value="elitismo">Elitismo</option>
+        <option value="truncamiento">Truncamiento</option>
+      </select><br>
+
+      <div id="particiones-input" style="display:none;">
+        <label>Particiones:</label>
+        <input type="number" name="particiones" min="1">
+      </div>
+
+      <label>Población:</label>
+      <input type="number" name="poblacion" id="poblacion" min="2"><br>
+      <label>Generaciones:</label>
+      <input type="number" name="generaciones" id="generaciones" min="1"><br>
+      <label>Mutación Elemento:</label>
+      <input type="number" step="0.00001" name="mutacion_elemento" id="mutacion_elemento" min="0" max="1"><br>
+      <label>Mutación Teoría:</label>
+      <input type="number" step="0.00001" name="mutacion_teoria" id="mutacion_teoria" min="0" max="1"><br>
+      <label>Mutación Práctica:</label>
+      <input type="number" step="0.00001" name="mutacion_practica" id="mutacion_practica" min="0" max="1"><br>
+    </div>
+
+    <br>
+    <button type="submit">Ejecutar</button>
+  </form>
+
+  <script>
+  const config = document.getElementById("configuracion");
+  const algoritmo = document.getElementById("algoritmo");
+  const params = document.getElementById("parametros");
+  const seleccion = document.getElementById("seleccion");
+  const tTorneo = document.getElementById("t_torneo");
+  const torneoInput = document.getElementById("torneo-input");
+  const cruce = document.getElementById("cruce");
+  const sustitucion = document.getElementById("sustitucion");
+  const poblacion = document.getElementById("poblacion");
+  const generaciones = document.getElementById("generaciones");
+  const mutacionElemento = document.getElementById("mutacion_elemento");
+  const mutacionTeoria = document.getElementById("mutacion_teoria");
+  const mutacionPractica = document.getElementById("mutacion_practica");
+  const particionesInput = document.getElementById("particiones-input");
+  const particiones = document.querySelector('input[name="particiones"]');
+
+  function bloquearCampos(campos) {
+    campos.forEach(campo => campo.disabled = true);
+  }
+
+  function desbloquearCampos(campos) {
+    campos.forEach(campo => campo.disabled = false);
+  }
+
+  function actualizarParametros() {
+    const esManual = config.value === "manual";
+    const esOptima = config.value === "optima";
+    const esClasico = algoritmo.value === "clasico";
+    const esNsga = algoritmo.value === "nsga-iii";
+
+    if (esManual) {
+      params.style.display = "block";
+      desbloquearCampos([
+        seleccion, cruce, sustitucion, tTorneo,
+        poblacion, generaciones,
+        mutacionElemento, mutacionTeoria, mutacionPractica, particiones
+      ]);
+      seleccion.disabled = esNsga;
+      sustitucion.disabled = esNsga;
+
+      if (esNsga) {
+        seleccion.value = "torneo";
+        sustitucion.value = "reemplazo";
+        torneoInput.style.display = "block";
+        particionesInput.style.display = "block";
+      } else {
+        torneoInput.style.display = (seleccion.value === "torneo") ? "block" : "none";
+        particionesInput.style.display = "none";
+      }
+
+    } else if (esOptima) {
+      params.style.display = "block";
+
+      if (esClasico) {
+        // valores óptimos para clásico
+        seleccion.value = "torneo";
+        tTorneo.value = 10;
+        cruce.value = "uniforme";
+        sustitucion.value = "reemplazo";
+        poblacion.value = 500;
+        generaciones.value = 80;
+        mutacionElemento.value = 0.00009;
+        mutacionTeoria.value = 0.0005;
+        mutacionPractica.value = 0.0005;
+        torneoInput.style.display = "block";
+        particionesInput.style.display = "none";
+
+        bloquearCampos([
+          seleccion, tTorneo, cruce, sustitucion,
+          poblacion, generaciones,
+          mutacionElemento, mutacionTeoria, mutacionPractica
+        ]);
+      }
+
+      if (esNsga) {
+        // valores óptimos para NSGA-III (ajústalos si lo necesitas)
+        seleccion.value = "torneo";
+        tTorneo.value = 2;
+        cruce.value = "uniforme";
+        sustitucion.value = "reemplazo";
+        poblacion.value = 100;
+        generaciones.value = 100;
+        mutacionElemento.value = 0.00009;
+        mutacionTeoria.value = 0.0005;
+        mutacionPractica.value = 0.005;
+        particiones.value = 6;
+
+        torneoInput.style.display = "block";
+        particionesInput.style.display = "block";
+
+        bloquearCampos([
+          seleccion, tTorneo, cruce, sustitucion,
+          poblacion, generaciones,
+          mutacionElemento, mutacionTeoria, mutacionPractica, particiones
+        ]);
+      }
+    }
+  }
+
+  config.addEventListener("change", actualizarParametros);
+  algoritmo.addEventListener("change", actualizarParametros);
+  seleccion.addEventListener("change", () => {
+    if (!seleccion.disabled) {
+      torneoInput.style.display = seleccion.value === "torneo" ? "block" : "none";
+    }
+  });
+
+  window.onload = actualizarParametros;
+</script>
+
+</body>
+</html>

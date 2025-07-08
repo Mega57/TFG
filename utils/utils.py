@@ -1,10 +1,10 @@
 import random
+import re
 from collections import defaultdict
 
 import numpy as np
 from model.alumno import alumno
 from model.solucion import solucion
-import pandas as pd
 
 class Mutar:
 
@@ -16,7 +16,7 @@ class Mutar:
                 matricula.horario_practicas = horarios_practica[matricula.cod_asignatura][matricula.grupo][matricula.grupo_practicas]
 
             if random.random() < p_mutacion_teoria:
-                grupos = {10, 11, 12} if matricula.curso == 1 else {10, 11}
+                grupos = {10, 11, 12} if matricula.curso == 1 or matricula.cod_asignatura == 42325 else {10, 11}
                 matricula.grupo = random.choice(list(grupos.difference({matricula.grupo})))
                 matricula.horario_teoria = horarios_teoria[matricula.cod_asignatura][matricula.grupo]
                 matricula.horario_practicas = horarios_practica[matricula.cod_asignatura][matricula.grupo][matricula.grupo_practicas]
@@ -27,13 +27,14 @@ class Seleccion:
 
     @staticmethod
     def seleccion_fitness(poblacion,fitness):
-        #probabilidades_seleccion = [fitness[i]/sum(fitness.values()) for i in range(len(poblacion))]
         probabilidades_seleccion = np.exp(list(fitness.values()))
         probabilidades_seleccion_n = probabilidades_seleccion / np.sum(probabilidades_seleccion)
         padre1 = poblacion[np.random.choice(len(poblacion),p=probabilidades_seleccion_n)]
         padre2 = poblacion[np.random.choice(len(poblacion),p=probabilidades_seleccion_n)]
-        while padre1 == padre2:
+        attempts = 0
+        while padre1 == padre2 and attempts<5:
             padre2 = poblacion[np.random.choice(len(poblacion),p=probabilidades_seleccion_n)]
+            attempts += 1
         return padre1, padre2
 
     @staticmethod
@@ -42,20 +43,24 @@ class Seleccion:
         probabilidades_seleccion = [(2*(len(poblacion)-(i+1)+1))/((len(poblacion)**2)+len(poblacion)) for i in range(len(poblacion))]
         padre1 = poblacion[np.random.choice(id_sorted, p=probabilidades_seleccion)]
         padre2 = poblacion[np.random.choice(id_sorted, p=probabilidades_seleccion)]
-        while padre1 == padre2:
+        attempts = 0
+        while padre1 == padre2 and attempts<5:
             padre2 = poblacion[np.random.choice(id_sorted, p=probabilidades_seleccion)]
+            attempts += 1
         return padre1, padre2
 
     @staticmethod
     def seleccion_torneo(poblacion,fitness,k):
 
-        torneo1 = random.sample([i for i in range(1, len(poblacion) + 1)], k)
-        torneo2 = random.sample([i for i in range(1, len(poblacion) + 1)], k)
+        torneo1 = random.sample([i for i in range(len(poblacion))], k)
+        torneo2 = random.sample([i for i in range(len(poblacion))], k)
         id1 = sorted(torneo1, key=lambda x: fitness[x], reverse=True)[0]
         id2 = sorted(torneo2, key=lambda x: fitness[x], reverse=True)[0]
-        while id1 == id2:
-            torneo2 = random.sample([i for i in range(1, len(poblacion) + 1)], k)
+        attempts = 0
+        while id1 == id2 and attempts<5:
+            torneo2 = random.sample([i for i in range(len(poblacion))], k)
             id2 = sorted(torneo2, key=lambda x: fitness[x], reverse=True)[0]
+            attempts+=1
         padre1 = poblacion[id1]
         padre2 = poblacion[id2]
         return padre1, padre2
@@ -66,8 +71,8 @@ class Cruce:
     def cruce_punto(padres,listaAlumnos):
         nueva_generacion = []
         for pareja in padres:
+            division = random.randrange(len(listaAlumnos))
             padre1, padre2 = pareja[0], pareja[1]
-            division = int(len(padre1.alumnos) / 2)
             hijo1 = solucion(padre1.alumnos[:division]+padre2.alumnos[division:],listaAlumnos)
             hijo2 = solucion(padre2.alumnos[:division]+padre1.alumnos[division:],listaAlumnos)
             nueva_generacion.extend([hijo1,hijo2])
@@ -77,9 +82,9 @@ class Cruce:
     def cruce_varios_puntos(padres,listaAlumnos):
         nueva_generacion = []
         for pareja in padres:
+            punto1 = random.randint(0, len(listaAlumnos) - 2)
+            punto2 = random.randint(punto1 + 1, len(listaAlumnos) - 1)
             padre1, padre2 = pareja[0], pareja[1]
-            punto1 = int(len(padre1.alumnos) / 2) - 50
-            punto2 = int(len(padre1.alumnos) / 2) + 50
             hijo1 = solucion(padre1.alumnos[:punto1] + padre2.alumnos[punto1:punto2] + padre1.alumnos[punto2:], listaAlumnos)
             hijo2 = solucion(padre2.alumnos[:punto1] + padre1.alumnos[punto1:punto2] + padre2.alumnos[punto2:], listaAlumnos)
             nueva_generacion.extend([hijo1, hijo2])
@@ -88,8 +93,8 @@ class Cruce:
     @staticmethod
     def cruce_uniforme(padres,listaAlumnos):
         nueva_generacion = []
-        mascara = [random.choice([False, True]) for _ in range(len(padres[0][0].alumnos))]
         for pareja in padres:
+            mascara = [random.choice([False, True]) for _ in range(len(padres[0][0].alumnos))]
             padre1, padre2 = pareja[0], pareja[1]
             hijo1 = []
             hijo2 = []
@@ -141,19 +146,23 @@ class Sustitucion:
 
     @staticmethod
     def truncamiento(poblacionInicial,nueva_generacion,fitness):
-        fitness_n = {str(i) + 'b': nueva_generacion[i].calcular_fitness() for i in range(len(nueva_generacion))}
-        fitness_n.update(fitness)
-        n_individuos_id = sorted(fitness_n, key=lambda x: fitness_n[x], reverse=True)
-        ng = []
-        for i in range(len(poblacionInicial)):
-            if not str(n_individuos_id[i])[-1].isalpha():
-                individuo = poblacionInicial[n_individuos_id[i]]
-                n_individuos_id.remove(str(n_individuos_id[i])+'b')
-            else:
-                individuo = nueva_generacion[int(str(n_individuos_id[i])[:-1])]
-                n_individuos_id.remove(int(str(n_individuos_id[i])[:-1]))
+        fitness_nueva = {f"b{i}": nueva_generacion[i].calcular_fitness() for i in range(len(nueva_generacion))}
 
-            ng.append(individuo)
+        # Unir fitness con población inicial (se asume que las claves del fitness original son enteros)
+        fitness_total = {**{str(k): v for k, v in fitness.items()}, **fitness_nueva}
+
+        # Ordenar todos por fitness descendente
+        ids_ordenados = sorted(fitness_total.keys(), key=lambda x: fitness_total[x], reverse=True)
+
+        ng = []
+        for id_str in ids_ordenados[:len(poblacionInicial)]:
+            if id_str.startswith("b"):
+                idx = int(id_str[1:])
+                ng.append(nueva_generacion[idx])
+            else:
+                idx = int(id_str)
+                ng.append(poblacionInicial[idx])
+
         return ng
 
 
@@ -165,7 +174,6 @@ class Utils:
         print("fitness" + " ( " + "solapes" + ", " +
               "Cohesion teoria" + ", " +
               "Equilibrio grupos" + ", " +
-              "Practicas pronto" + ", " +
               "Cohesion practicas" + ", " +
               "Preferencias" + " ) " + str(generacion) +" Generacion")
         print("---------------------------------------------------------------------------------------------------------------------------------------")
@@ -176,7 +184,6 @@ class Utils:
 
     @staticmethod
     def str_time(time):
-
         if time < 60:
             return (f"{time:.2f} seg")
         elif time < 3600:
@@ -185,6 +192,22 @@ class Utils:
         else:
             horas = time/3600
             return (f"{horas:.2f} hr")
+
+    @staticmethod
+    def to_second(time_str):
+        match = re.match(r"([\d.]+)\s*(seg|min|hr)", time_str)
+        if not match:
+            raise ValueError("Formato de tiempo no válido")
+        value, unit = match.groups()
+        value = float(value)
+        if unit == "seg":
+            return value
+        elif unit == "min":
+            return value * 60
+        elif unit == "hr":
+            return value * 3600
+        else:
+            raise ValueError("Unidad de tiempo no reconocida")
 
     @staticmethod
     def import_horarios(horarios):
@@ -203,7 +226,3 @@ class Utils:
                     horarios_practicas[fila["CODIGO"]][fila["ID GRUPO"]][2].append(fila["DÍA"] + '/' + fila["HORARIO"])
 
         return horarios_teoria,horarios_practicas
-
-
-
-
