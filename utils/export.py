@@ -2,12 +2,27 @@ from openpyxl.formatting.rule import CellIsRule
 from openpyxl.styles import NamedStyle, PatternFill, Font
 from openpyxl.utils import get_column_letter
 from openpyxl.workbook import Workbook
+import os
+import shutil
 
 
 class Export:
 
     @staticmethod
-    def matriculas(listaAlumnos, seleccion, cruce, sustitucion,carpeta):
+    def limpiar_directorio_result():
+        ruta_result = os.path.join(os.getcwd(), "result")
+        if os.path.exists(ruta_result):
+            for archivo in os.listdir(ruta_result):
+                ruta_completa = os.path.join(ruta_result, archivo)
+                if os.path.isfile(ruta_completa) or os.path.islink(ruta_completa):
+                    os.remove(ruta_completa)
+                elif os.path.isdir(ruta_completa):
+                    shutil.rmtree(ruta_completa)
+
+    @staticmethod
+    def matriculas(listaAlumnos, seleccion, cruce, sustitucion,carpeta, script, nsga3 = False, conf = None, i = 0):
+        if (not script and nsga3 and i == 1) or (not script and not nsga3):
+            Export.limpiar_directorio_result()
         wb = Workbook()
         ws = wb.active
         ws.append(["AÑO", "PLAN", "CODIGO", "ASIGNATURA", "ALUMNO", "GRUPO", "GP"])
@@ -20,10 +35,19 @@ class Export:
         ws.column_dimensions[get_column_letter(4)].width = len(
             "PLANIFICACIÓN E INTEGRACIÓN DE SISTEMAS Y SERVICIOS") + 0.5
         ws.column_dimensions[get_column_letter(5)].width = len("Estudiante000") + 0.4
-        wb.save(carpeta+'/solucion'+seleccion+"-"+cruce+"-"+sustitucion+".xlsx")
-
+        if not nsga3:
+            if script:
+                wb.save(carpeta+'/solucion-'+seleccion+"-"+cruce+"-"+sustitucion+".xlsx")
+            else:
+                wb.save(carpeta + '/matriculas.xlsx')
+        else:
+            if script and False:
+                wb.save(carpeta + '/solucion' + str(conf.solapes) + "-" + str(conf.tasa_cohesion) + "-" + str(conf.d_total) + "-" + str(conf.tasa_practicas_pronto) + "-" + str(conf.tasa_cohesion_practicas) + "-" + str(conf.tasa_preferencias) + ".xlsx")
+            else:
+                os.makedirs(carpeta+"/Solucion_" + str(i), exist_ok=True)
+                wb.save(carpeta + "/Solucion_" + str(i) + '/matriculas.xlsx')
     @staticmethod
-    def alumnos_clase(alumnosClaseInicio, alumnosClaseFinal, asignaturas, seleccion, cruce, sustitucion, carpeta):
+    def alumnos_clase(alumnosClaseInicio, alumnosClaseFinal, asignaturas, seleccion, cruce, sustitucion, carpeta, script, nsga3 = False, conf = None, i=0):
 
         wb = Workbook()
 
@@ -49,7 +73,7 @@ class Export:
 
             cod_asignatura = clave[0]
             filtro = (asignaturas["COD. ASIG"] == cod_asignatura)
-            datos_asignatura = asignaturas.loc[filtro, ["NOMBRE ASIGNATURA", "CURSO"]]
+            datos_asignatura = asignaturas.loc[filtro, ["NOMBRE ASIGNATURA", "CURSO", "COD. ASIG"]]
             alumnos_teoria_10 = alumnosClaseTeoriaInicio[clave][10]
             alumnos_teoria_10_1 = alumnosClasePracticasInicio[clave[0]][10][1]
             alumnos_teoria_10_2 = alumnosClasePracticasInicio[clave[0]][10][2]
@@ -70,7 +94,7 @@ class Export:
             alumnos_teoria_12_1_f = alumnosClasePracticasFinal[clave[0]][12][1]
             alumnos_teoria_12_2_f = alumnosClasePracticasFinal[clave[0]][12][2]
 
-            if (datos_asignatura["CURSO"] == 1).any():
+            if ((datos_asignatura["CURSO"] == 1) | (datos_asignatura["COD. ASIG"] == 42325)).any():
                 alumnos_teoria = int(sum(alumnosClaseTeoriaInicio[clave].values()) / 3)
                 alumnos_practica = int((sum(alumnosClaseTeoriaInicio[clave].values()) / 3) / 2)
                 hoja1.append(
@@ -138,4 +162,14 @@ class Export:
         hoja2.column_dimensions[get_column_letter(3)].width = len("ESPERADOS POR GRUPO TEORIA") + 3.3
         hoja2.column_dimensions[get_column_letter(4)].width = len("ESPERADOS POR GRUPO PRACTICAS") + 3.3
 
-        wb.save(carpeta+"/"+seleccion+"-"+cruce+"-"+sustitucion+".xlsx")
+        if not nsga3:
+            if script:
+                wb.save(carpeta+"/"+seleccion+"-"+cruce+"-"+sustitucion+".xlsx")
+            else:
+                wb.save(carpeta + "/distribucion-grupos.xlsx")
+        else:
+            if script and False:
+                wb.save(carpeta + "/alumnos" + str(conf.solapes) + "-" + str(conf.tasa_cohesion) + "-" + str(conf.d_total) + "-" + str(conf.tasa_practicas_pronto) + "-" + str(conf.tasa_cohesion_practicas) + "-" + str(conf.tasa_preferencias) + ".xlsx")
+            else:
+                os.makedirs(carpeta + "/Solucion_" + str(i), exist_ok=True)
+                wb.save(carpeta +  "/Solucion_" + str(i) + "/distribucion-grupos.xlsx")

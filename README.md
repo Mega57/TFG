@@ -26,6 +26,7 @@ Este proyecto implementa dos algoritmos genéticos —uno clásico y otro basado
 │   └── style.css
 ├── templates/
 │   ├── index.html
+│   ├── loading.html
 │   ├── resultados_genetico.html
 │   └── resultados_nsga.html
 ├── scripts/
