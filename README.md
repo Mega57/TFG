@@ -66,6 +66,7 @@ Contiene los estilos CSS utilizados por las plantillas de la aplicación web:
 #### Carpeta `templates`
 Contiene las plantillas HTML que definen la interfaz web:
 - `index.html`: Página de inicio. Permite subir los archivos, seleccionar algoritmo y configuración, y ejecutar el proceso.
+- `loading.html`: Muestra una pantalla de carga durante la ejecución del algoritmo.
 - `resultados_genetico.html`: Muestra los resultados del algoritmo genético clásico.
 - `resultados_nsga.html`: Muestra los resultados del algoritmo NSGA-III.
 

@@ -14,7 +14,6 @@ from utils.utils import Utils
 # Este script ejecuta una carga computacional muy elevada durante un periodo prolongado.
 # ⚠️ Tiempo estimado de ejecución: más de 30 horas.
 # Utiliza todos los recursos disponibles del sistema, incluyendo núcleos de CPU y memoria RAM.
-# Se recomienda ejecutar en un entorno dedicado o servidor de alto rendimiento.
 
 
 seleccion = ["torneo"]
