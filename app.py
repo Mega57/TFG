@@ -113,15 +113,15 @@ def loading():
                 t_torneo = int(params['t_torneo']) if seleccion == "torneo" else None
                 particiones = int(params['particiones']) if algoritmo == "nsga-iii" else None
             else:
-                poblacion = 500 if algoritmo == "clasico" else 100
-                generaciones = 80 if algoritmo == "clasico" else 100
+                poblacion = 500 if algoritmo == "clasico" else 300
+                generaciones = 80 if algoritmo == "clasico" else 50
                 seleccion = "torneo"
                 cruce = "uniforme"
                 sustitucion = "reemplazo"
                 mutacion_elemento = 0.00009
                 mutacion_teoria = 0.0005
-                mutacion_practica = 0.0005 if algoritmo == "clasico" else 0.005
-                t_torneo = 10 if algoritmo == "clasico" else 2
+                mutacion_practica = 0.0005
+                t_torneo = 10
                 particiones = 6 if algoritmo == "nsga-iii" else None
 
             cancel_check = lambda: execution_cancelled
